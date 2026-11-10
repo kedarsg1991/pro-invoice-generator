@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InvoiceFlow</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1>InvoiceFlow</h1>
+      <p class="subtitle">Simple invoice generator for freelancers</p>
+    </header>
+
+    <main class="invoice">
+      <section class="details-grid">
+        <div class="card">
+          <h2>From</h2>
+          <label>
+            Name
+            <input type="text" id="from-name" placeholder="Your name or company">
+          </label>
+          <label>
+            Email
+            <input type="email" id="from-email" placeholder="you@example.com">
+          </label>
+          <label>
+            Address
+            <textarea id="from-address" rows="3" placeholder="Street, City, State, ZIP"></textarea>
+          </label>
+        </div>
+
+        <div class="card">
+          <h2>To</h2>
+          <label>
+            Client Name
+            <input type="text" id="to-name" placeholder="Client name or company">
+          </label>
+          <label>
+            Email
+            <input type="email" id="to-email" placeholder="client@example.com">
+          </label>
+          <label>
+            Address
+            <textarea id="to-address" rows="3" placeholder="Street, City, State, ZIP"></textarea>
+          </label>
+        </div>
+
+        <div class="card invoice-meta">
+          <h2>Invoice Details</h2>
+          <label>
+            Date
+            <input type="date" id="invoice-date">
+          </label>
+          <label>
+            Invoice #
+            <input type="text" id="invoice-number" placeholder="INV-001">
+          </label>
+        </div>
+      </section>
+
+      <section class="card items-section">
+        <div class="items-header">
+          <h2>Items</h2>
+        </div>
+        <div class="table-wrap">
+          <table id="items-table">
+            <thead>
+              <tr>
+                <th>Item Description</th>
+                <th>Quantity</th>
+                <th>Rate</th>
+                <th>Amount</th>
+                <th class="actions-col">Action</th>
+              </tr>
+            </thead>
+            <tbody id="items-body">
+              <tr>
+                <td><input type="text" class="item-description" placeholder="Service or product"></td>
+                <td><input type="number" class="item-quantity" min="0" step="1" value="1"></td>
+                <td><input type="number" class="item-rate" min="0" step="0.01" value="0.00"></td>
+                <td class="amount-cell">$<span class="item-amount">0.00</span></td>
+                <td class="actions-col"><button type="button" class="btn btn-secondary remove-item">Remove</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="items-actions">
+          <button type="button" id="add-item" class="btn btn-secondary">Add Item</button>
+        </div>
+      </section>
+
+      <section class="totals card">
+        <div class="totals-row">
+          <span>Subtotal</span>
+          <strong>$<span id="subtotal">0.00</span></strong>
+        </div>
+        <div class="totals-row grand-total">
+          <span>Grand Total</span>
+          <strong>$<span id="grand-total">0.00</span></strong>
+        </div>
+      </section>
+
+      <section class="actions no-print">
+        <button type="button" id="print-invoice" class="btn btn-primary">Print / Save as PDF</button>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
