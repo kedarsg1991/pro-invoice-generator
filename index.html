@@ -5,108 +5,303 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>InvoiceFlow</title>
   <link rel="stylesheet" href="style.css">
+  <script src="libs/pdf.min.js"></script>
+  <script src="libs/html2pdf.bundle.min.js"></script>
 </head>
 <body>
-  <div class="app">
-    <header class="header">
-      <h1>InvoiceFlow</h1>
-      <p class="subtitle">Simple invoice generator for freelancers</p>
-    </header>
-
-    <main class="invoice">
-      <section class="details-grid">
-        <div class="card">
-          <h2>From</h2>
-          <label>
-            Name
-            <input type="text" id="from-name" placeholder="Your name or company">
-          </label>
-          <label>
-            Email
-            <input type="email" id="from-email" placeholder="you@example.com">
-          </label>
-          <label>
-            Address
-            <textarea id="from-address" rows="3" placeholder="Street, City, State, ZIP"></textarea>
-          </label>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <img id="header-logo" class="header-logo hidden" alt="Company logo">
+        <div class="header-text">
+          <h1>InvoiceFlow</h1>
+          <p class="subtitle">Freelancer invoice &amp; client management</p>
         </div>
+      </div>
+      <nav class="tabs no-print" id="main-tabs">
+        <button type="button" class="tab-btn active" data-tab="create">Create Invoice</button>
+        <button type="button" class="tab-btn" data-tab="clients">Clients &amp; History</button>
+        <button type="button" class="tab-btn" data-tab="portal">Client Portal</button>
+        <button type="button" class="tab-btn" data-tab="import">Import Invoices</button>
+      </nav>
+    </div>
+  </header>
 
-        <div class="card">
-          <h2>To</h2>
-          <label>
-            Client Name
-            <input type="text" id="to-name" placeholder="Client name or company">
-          </label>
-          <label>
-            Email
-            <input type="email" id="to-email" placeholder="client@example.com">
-          </label>
-          <label>
-            Address
-            <textarea id="to-address" rows="3" placeholder="Street, City, State, ZIP"></textarea>
-          </label>
-        </div>
+  <main class="app">
+    <!-- ================= CREATE INVOICE ================= -->
+    <section id="tab-create" class="tab-panel active">
+      <div class="invoice" id="invoice-area">
+        <div id="status-stamp-container"></div>
 
-        <div class="card invoice-meta">
-          <h2>Invoice Details</h2>
-          <label>
-            Date
-            <input type="date" id="invoice-date">
-          </label>
-          <label>
-            Invoice #
-            <input type="text" id="invoice-number" placeholder="INV-001">
-          </label>
-        </div>
+        <section class="details-grid">
+          <div class="card">
+            <h2>From</h2>
+            <label class="no-print">
+              Company Logo
+              <input type="file" id="from-logo" accept="image/*">
+            </label>
+            <label>
+              Name
+              <input type="text" id="from-name" placeholder="Your name or company">
+            </label>
+            <label>
+              Email
+              <input type="email" id="from-email" placeholder="you@example.com">
+            </label>
+            <label>
+              Address
+              <textarea id="from-address" rows="3" placeholder="Street, City, State, ZIP"></textarea>
+            </label>
+          </div>
+
+          <div class="card">
+            <h2>To</h2>
+            <label class="no-print">
+              Saved Client
+              <select id="client-select">
+                <option value="">— Select a saved client —</option>
+              </select>
+            </label>
+            <label>
+              Client Name
+              <input type="text" id="to-name" placeholder="Client name or company">
+            </label>
+            <label>
+              Email
+              <input type="email" id="to-email" placeholder="client@example.com">
+            </label>
+            <label>
+              Address
+              <textarea id="to-address" rows="3" placeholder="Street, City, State, ZIP"></textarea>
+            </label>
+          </div>
+
+          <div class="card invoice-meta">
+            <h2>Invoice Details</h2>
+            <label>
+              Date
+              <input type="date" id="invoice-date">
+            </label>
+            <label>
+              Invoice #
+              <input type="text" id="invoice-number" placeholder="INV-001">
+            </label>
+            <label>
+              Currency
+              <select id="currency-select">
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+                <option value="INR">INR (₹)</option>
+                <option value="AUD">AUD (A$)</option>
+                <option value="CAD">CAD (C$)</option>
+                <option value="JPY">JPY (¥)</option>
+              </select>
+            </label>
+            <label class="no-print">
+              Invoice Status
+              <select id="invoice-status">
+                <option value="Draft">Draft</option>
+                <option value="Sent">Sent</option>
+                <option value="Paid">Paid</option>
+                <option value="Overdue">Overdue</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <section class="card items-section">
+          <div class="items-header">
+            <h2>Items</h2>
+          </div>
+          <div class="table-wrap">
+            <table id="items-table">
+              <thead>
+                <tr>
+                  <th class="col-code">Item Code</th>
+                  <th>Item Description</th>
+                  <th class="col-hsn">HSN/SAC</th>
+                  <th class="col-qty">Qty</th>
+                  <th class="col-unit">Unit</th>
+                  <th class="col-rate">Rate</th>
+                  <th class="col-disc">Disc %</th>
+                  <th class="col-tax">Tax %</th>
+                  <th class="col-amount">Amount</th>
+                  <th class="col-taxamt">Tax Amt</th>
+                  <th class="actions-col no-print">Action</th>
+                </tr>
+              </thead>
+              <tbody id="items-body"></tbody>
+            </table>
+          </div>
+          <div class="items-actions no-print">
+            <button type="button" id="add-item" class="btn btn-secondary">Add Item</button>
+          </div>
+        </section>
+
+        <section class="totals card">
+          <div class="totals-row">
+            <span>Subtotal</span>
+            <strong><span class="currency-symbol"></span><span id="subtotal">0.00</span></strong>
+          </div>
+          <div class="totals-row">
+            <span>Total Tax</span>
+            <strong><span class="currency-symbol"></span><span id="tax-amount">0.00</span></strong>
+          </div>
+          <div class="totals-row grand-total">
+            <span>Grand Total</span>
+            <strong><span class="currency-symbol"></span><span id="grand-total">0.00</span></strong>
+          </div>
+        </section>
+
+        <div id="payment-qr-container"></div>
+      </div>
+
+      <section class="actions no-print">
+        <button type="button" id="download-pdf" class="btn btn-secondary">Download PDF</button>
+        <button type="button" id="print-invoice" class="btn btn-secondary">Print</button>
+        <button type="button" id="save-invoice" class="btn btn-primary">Save Invoice</button>
       </section>
+    </section>
 
-      <section class="card items-section">
-        <div class="items-header">
-          <h2>Items</h2>
+    <!-- ================= CLIENTS &amp; HISTORY ================= -->
+    <section id="tab-clients" class="tab-panel">
+      <div class="two-col">
+        <div class="card">
+          <h2>Add / Save Client</h2>
+          <form id="client-form">
+            <label>
+              Name
+              <input type="text" id="client-name" placeholder="Client name or company" required>
+            </label>
+            <label>
+              Email
+              <input type="email" id="client-email" placeholder="client@example.com">
+            </label>
+            <label>
+              Address
+              <textarea id="client-address" rows="3" placeholder="Street, City, State, ZIP"></textarea>
+            </label>
+            <label>
+              Tax ID
+              <input type="text" id="client-tax-id" placeholder="e.g. GSTIN / VAT number">
+            </label>
+            <button type="submit" class="btn btn-primary">Save Client</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2>Saved Clients</h2>
+          <div class="table-wrap">
+            <table id="clients-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Invoices</th>
+                  <th class="actions-col">Action</th>
+                </tr>
+              </thead>
+              <tbody id="clients-body"></tbody>
+            </table>
+          </div>
+          <div id="clients-empty" class="empty-state">No clients saved yet.</div>
+        </div>
+      </div>
+
+      <div class="card" id="client-history-card">
+        <div class="card-head">
+          <h2 id="history-title">Client History</h2>
+          <button type="button" id="generate-statement" class="btn btn-primary hidden">Generate Client Statement</button>
+        </div>
+        <div id="history-empty" class="empty-state">Select a client above to view their invoice history.</div>
+        <div id="history-content" class="hidden">
+          <div class="history-summary" id="history-summary"></div>
+          <div class="table-wrap">
+            <table id="history-table">
+              <thead>
+                <tr>
+                  <th>Invoice #</th>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th class="actions-col">Action</th>
+                </tr>
+              </thead>
+              <tbody id="history-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CLIENT PORTAL ================= -->
+    <section id="tab-portal" class="tab-panel">
+      <div class="card portal-select-card">
+        <label>
+          Viewing Portal As
+          <select id="portal-client-select"></select>
+        </label>
+      </div>
+
+      <div id="portal-empty" class="card empty-state">
+        Select a client to view their portal dashboard.
+      </div>
+
+      <div id="portal-content" class="hidden">
+        <div class="portal-summary" id="portal-summary"></div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>Invoices</h2>
+            <span class="muted" id="portal-invoice-count"></span>
+          </div>
+          <div id="portal-invoices"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= IMPORT INVOICES ================= -->
+    <section id="tab-import" class="tab-panel">
+      <div class="card">
+        <h2>Import Invoices from PDF</h2>
+        <p class="muted">Select one or more PDF invoices. Text is extracted locally — nothing leaves your device.</p>
+        <label>
+          PDF Files
+          <input type="file" id="pdf-file-input" accept=".pdf" multiple>
+        </label>
+        <button type="button" id="parse-pdfs" class="btn btn-primary">Extract Data from PDFs</button>
+      </div>
+
+      <div id="import-status"></div>
+
+      <div id="import-review-wrap" class="hidden">
+        <div class="card-head">
+          <h2>Review Imported Invoices</h2>
         </div>
         <div class="table-wrap">
-          <table id="items-table">
+          <table id="import-review-table">
             <thead>
               <tr>
-                <th>Item Description</th>
-                <th>Quantity</th>
-                <th>Rate</th>
+                <th>File</th>
+                <th>Vendor</th>
+                <th>Invoice #</th>
+                <th>Date</th>
                 <th>Amount</th>
+                <th>GSTIN</th>
+                <th>Status</th>
                 <th class="actions-col">Action</th>
               </tr>
             </thead>
-            <tbody id="items-body">
-              <tr>
-                <td><input type="text" class="item-description" placeholder="Service or product"></td>
-                <td><input type="number" class="item-quantity" min="0" step="1" value="1"></td>
-                <td><input type="number" class="item-rate" min="0" step="0.01" value="0.00"></td>
-                <td class="amount-cell">$<span class="item-amount">0.00</span></td>
-                <td class="actions-col"><button type="button" class="btn btn-secondary remove-item">Remove</button></td>
-              </tr>
-            </tbody>
+            <tbody id="import-review-body"></tbody>
           </table>
         </div>
-        <div class="items-actions">
-          <button type="button" id="add-item" class="btn btn-secondary">Add Item</button>
-        </div>
-      </section>
+        <button type="button" id="save-imported" class="btn btn-primary">Save All Imported Invoices</button>
+      </div>
+    </section>
+  </main>
 
-      <section class="totals card">
-        <div class="totals-row">
-          <span>Subtotal</span>
-          <strong>$<span id="subtotal">0.00</span></strong>
-        </div>
-        <div class="totals-row grand-total">
-          <span>Grand Total</span>
-          <strong>$<span id="grand-total">0.00</span></strong>
-        </div>
-      </section>
-
-      <section class="actions no-print">
-        <button type="button" id="print-invoice" class="btn btn-primary">Print / Save as PDF</button>
-      </section>
-    </main>
-  </div>
+  <div id="toast" class="toast hidden"></div>
 
   <script src="script.js"></script>
 </body>
